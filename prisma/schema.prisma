@@ -1,0 +1,11 @@
+// to generate migrations and ERD: npx prisma migrate dev
+// to see the tables: npx prisma studio
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
