@@ -14,13 +14,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Workout {
+model WorkoutRoutine {
   id   String @id @default(cuid())
   name String
+  isActive Boolean
+  createdAt DateTime
 
   categories Category[]
-  User       User?      @relation(fields: [userId], references: [id])
-  userId     String?
+  user User @relation(fields: [userId], references: [id])
+  userId String
 }
 
 model User {
@@ -31,7 +33,7 @@ model User {
   avatarUrl String?
   createdAt DateTime @default(now())
 
-  workouts Workout[]
+  workoutRoutines WorkoutRoutine[]
 }
 
 model Exercise {
@@ -48,8 +50,8 @@ model Exercise {
 model Category {
   id   String @id @default(cuid())
   name String
-
+  
   exercises Exercise[]
-  Workout   Workout?   @relation(fields: [workoutId], references: [id])
+  Workout   WorkoutRoutine?   @relation(fields: [workoutId], references: [id])
   workoutId String?
 }

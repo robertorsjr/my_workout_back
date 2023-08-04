@@ -8,6 +8,7 @@
 .pnp.js
 
 .env
+.todo
 
 # testing
 /coverage
