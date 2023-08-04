@@ -1,16 +1,11 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { prisma } from "../libs/prisma"
-import { authCreateUserBodySchema, authUserInfoSchema } from "../schemas/authSchema"
+import {  authUserInfoSchema } from "../schemas/authSchema"
 import { getGoogleUserByToken } from "../services/auth"
-
-export async function getUser(request: FastifyRequest){
-  await request.jwtVerify()
-
-  return { user: request.user }
-}
+import { accessTokenBodySchema } from "../schemas/tokenSchema"
 
 export async function postUser(fastify: FastifyInstance, request: FastifyRequest) {
-  const { access_token } = authCreateUserBodySchema.parse(request.body)
+  const { access_token } = accessTokenBodySchema.parse(request.body)
   const userResponse = await getGoogleUserByToken(access_token)
   const userData = await userResponse.data
   const userInfo = authUserInfoSchema.parse(userData)
