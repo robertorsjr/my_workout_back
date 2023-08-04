@@ -15,29 +15,41 @@ datasource db {
 }
 
 model Workout {
-  id String @id @default(cuid())
+  id   String @id @default(cuid())
   name String
+
+  categories Category[]
+  User       User?      @relation(fields: [userId], references: [id])
+  userId     String?
 }
 
 model User {
-  id         String   @id @default(cuid())
-  name       String
-  email      String   @unique
-  googleId   String?   @unique
-  avatarUrl  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  googleId  String?  @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+
+  workouts Workout[]
 }
 
 model Exercise {
-  id          String   @id @default(cuid())
+  id          String @id @default(cuid())
   name        String
   repetitions String
   weight      String
   series      String
+
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
 }
 
 model Category {
-  id     String   @id @default(cuid())
-  name   String
-}
+  id   String @id @default(cuid())
+  name String
 
+  exercises Exercise[]
+  Workout   Workout?   @relation(fields: [workoutId], references: [id])
+  workoutId String?
+}
