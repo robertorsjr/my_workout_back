@@ -11,15 +11,14 @@ async function bootstrap(){
 	await fastify.register(cors, {
 		origin: true
 	})
-
-	//em produçao precisa estar em variavel
+	
 	await fastify.register(jwt, {
-		secret: 'my_workout'
+		secret: process.env.API_SECRET
 	})
 
   await routes(fastify)
 
-	await fastify.listen({ port: 3333 })
+	await fastify.listen({ port: process.env.API_PORT || 3333 })
 	//  host: '0.0.0.0'
 }
 
