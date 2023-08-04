@@ -18,11 +18,13 @@ model WorkoutRoutine {
   id   String @id @default(cuid())
   name String
   isActive Boolean
-  createdAt DateTime
+  createdAt DateTime @default(now())
 
   categories Category[]
   user User @relation(fields: [userId], references: [id])
   userId String
+
+  @@map("workout_routines")
 }
 
 model User {
@@ -34,6 +36,8 @@ model User {
   createdAt DateTime @default(now())
 
   workoutRoutines WorkoutRoutine[]
+
+  @@map("users")
 }
 
 model Exercise {
@@ -45,6 +49,8 @@ model Exercise {
 
   Category   Category? @relation(fields: [categoryId], references: [id])
   categoryId String?
+
+   @@map("exercises")
 }
 
 model Category {
@@ -54,4 +60,6 @@ model Category {
   exercises Exercise[]
   Workout   WorkoutRoutine?   @relation(fields: [workoutId], references: [id])
   workoutId String?
+
+  @@map("categories")
 }
