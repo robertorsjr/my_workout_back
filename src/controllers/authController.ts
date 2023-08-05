@@ -1,9 +1,10 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { prisma } from "../libs/prisma"
-import {  authUserCreateBodySchema, authUserInfoSchema, authUserLoginBodySchema } from "../schemas/authSchema"
+import { authUserInfoSchema, authUserLoginBodySchema } from "../schemas/authSchema"
 import { getGoogleUserByToken } from "../services/auth"
 import { accessTokenBodySchema } from "../schemas/tokenSchema"
 import bcrypt from 'bcrypt'
+import { BadRequestError } from "../helpers/ApiError"
 
 export async function authUserWithOAuth2(fastify: FastifyInstance, request: FastifyRequest) {
   const { access_token } = accessTokenBodySchema.parse(request.body)
@@ -46,11 +47,11 @@ export async function login(fastify: FastifyInstance, request: FastifyRequest) {
     }
   })
 
-  if(!user) throw Error('E-mail ou senha invalidos')
+  if(!user) throw new BadRequestError('E-mail ou senha invalidos')
 
   const verifyPass = await bcrypt.compare(password, user.password as string)
 
-  if(!verifyPass) throw Error('E-mail ou senha invalidos')
+  if(!verifyPass) throw new BadRequestError('E-mail ou senha invalidos')
 
   const token = fastify.jwt.sign({
     id: user.id,
