@@ -6,3 +6,9 @@ export const authUserInfoSchema = z.object({
   name: z.string(),
   picture: z.string().url()
 })
+
+export const authUserCreateBodySchema = z.object({
+  email: z.string().email(),
+  name: z.string(),
+  password: z.string()
+})
