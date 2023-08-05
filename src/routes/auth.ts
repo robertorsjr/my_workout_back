@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
-import { postUser, postUserWithOAuth2 } from "../controllers/authController";
+import { login, authUserWithOAuth2 } from "../controllers/authController";
 
 export async function authRoutes(fastify: FastifyInstance) {
-	fastify.post('/users', async (request) => await postUser(fastify, request))
-	fastify.post('/users/oauth', async (request) => await postUserWithOAuth2(fastify, request))
+	fastify.post('/auth', async (request) => await authUserWithOAuth2(fastify, request))
+	fastify.post('/auth/login', async (request) => await login(fastify, request))
 }

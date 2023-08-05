@@ -12,3 +12,8 @@ export const authUserCreateBodySchema = z.object({
   name: z.string(),
   password: z.string()
 })
+
+export const authUserLoginBodySchema = z.object({
+  email: z.string().email(),
+  password: z.string()
+})

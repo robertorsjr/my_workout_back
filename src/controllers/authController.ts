@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { prisma } from "../libs/prisma"
-import {  authUserCreateBodySchema, authUserInfoSchema } from "../schemas/authSchema"
+import {  authUserCreateBodySchema, authUserInfoSchema, authUserLoginBodySchema } from "../schemas/authSchema"
 import { getGoogleUserByToken } from "../services/auth"
 import { accessTokenBodySchema } from "../schemas/tokenSchema"
 import bcrypt from 'bcrypt'
 
-export async function postUserWithOAuth2(fastify: FastifyInstance, request: FastifyRequest) {
+export async function authUserWithOAuth2(fastify: FastifyInstance, request: FastifyRequest) {
   const { access_token } = accessTokenBodySchema.parse(request.body)
   const userResponse = await getGoogleUserByToken(access_token)
   const userData = await userResponse.data
@@ -29,8 +29,7 @@ export async function postUserWithOAuth2(fastify: FastifyInstance, request: Fast
   }
 
   const token = fastify.jwt.sign({
-    name: user.name,
-    avatarUrl: user.avatarUrl,
+    id: user.id,
   },{
     sub: user.id,
     expiresIn: '7 days'
@@ -39,36 +38,29 @@ export async function postUserWithOAuth2(fastify: FastifyInstance, request: Fast
   return { token }
 }
 
-export async function postUser(fastify: FastifyInstance, request: FastifyRequest) {
-  const { email, name, password } = authUserCreateBodySchema.parse(request.body)
-
+export async function login(fastify: FastifyInstance, request: FastifyRequest) {
+  const { email, password } = authUserLoginBodySchema.parse(request.body)
   const user = await prisma.user.findFirst({
     where: {
       email,
     }
   })
 
-  if(user){
-    throw new Error('Usuario ja existe')
-  }
+  if(!user) throw Error('E-mail ou senha invalidos')
 
-  const hashPassword = await bcrypt.hash(password, 10)
+  const verifyPass = await bcrypt.compare(password, user.password as string)
 
-  const newUser = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: hashPassword
-    }
-  })
+  if(!verifyPass) throw Error('E-mail ou senha invalidos')
 
   const token = fastify.jwt.sign({
-    name: newUser.name,
-    avatarUrl: newUser.avatarUrl,
+    id: user.id,
   },{
-    sub: newUser.id,
+    sub: user.id,
     expiresIn: '7 days'
   } )
-
-  return { newUser } 
+  
+  return { 
+    ...user,
+    token
+  }  
 }
