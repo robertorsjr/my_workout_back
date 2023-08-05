@@ -1,0 +1,6 @@
+export enum ApiErrorEnum {
+  BAD_REQUEST = 400,
+  NOT_FOUND = 404,
+  UNAUTORIZED = 401,
+  INTERNAL_SERVER = 500
+}

@@ -1,16 +1,13 @@
 import { FastifyInstance, FastifyRequest } from "fastify"
 import { prisma } from "../libs/prisma"
-import { authCreateUserBodySchema, authUserInfoSchema } from "../schemas/authSchema"
+import { authUserInfoSchema, authUserLoginBodySchema } from "../schemas/authSchema"
 import { getGoogleUserByToken } from "../services/auth"
+import { accessTokenBodySchema } from "../schemas/tokenSchema"
+import bcrypt from 'bcrypt'
+import { BadRequestError } from "../helpers/ApiError"
 
-export async function getUser(request: FastifyRequest){
-  await request.jwtVerify()
-
-  return { user: request.user }
-}
-
-export async function postUser(fastify: FastifyInstance, request: FastifyRequest) {
-  const { access_token } = authCreateUserBodySchema.parse(request.body)
+export async function authUserWithOAuth2(fastify: FastifyInstance, request: FastifyRequest) {
+  const { access_token } = accessTokenBodySchema.parse(request.body)
   const userResponse = await getGoogleUserByToken(access_token)
   const userData = await userResponse.data
   const userInfo = authUserInfoSchema.parse(userData)
@@ -33,12 +30,38 @@ export async function postUser(fastify: FastifyInstance, request: FastifyRequest
   }
 
   const token = fastify.jwt.sign({
-    name: user.name,
-    avatarUrl: user.avatarUrl,
+    id: user.id,
   },{
     sub: user.id,
     expiresIn: '7 days'
   } )
 
   return { token }
+}
+
+export async function login(fastify: FastifyInstance, request: FastifyRequest) {
+  const { email, password } = authUserLoginBodySchema.parse(request.body)
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    }
+  })
+
+  if(!user) throw new BadRequestError('E-mail ou senha invalidos')
+
+  const verifyPass = await bcrypt.compare(password, user.password as string)
+
+  if(!verifyPass) throw new BadRequestError('E-mail ou senha invalidos')
+
+  const token = fastify.jwt.sign({
+    id: user.id,
+  },{
+    sub: user.id,
+    expiresIn: '7 days'
+  } )
+  
+  return { 
+    ...user,
+    token
+  }  
 }
